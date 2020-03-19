@@ -12,7 +12,8 @@ This Github repository contains Rscripts to simulation COVID-19 outbreak in majo
 1. functional scripts which simulates SARS-CoV-2 dynamics in Wuhan and other Chinese cities: wuhan_simulation_policy_by_age.R and other_city_simulaiton_policy_by_age.R
 2. model inputs generation: model_inputs.R
 3. Incremental Mixture Importance Sampling model calibration: model_calibration_ver_3.R
-4. generate model outcomes under different timing and duration of control policies: all scripts under  "simulation_by_policy" folder.
+4. Generate status quo:  decompose_economy_loss_probablistic.R
+5. Generate model outcomes under different timing and duration of control policies: all scripts under  "simulation_by_policy" folder.
 
 ## Model Calibration
 We calibrated our model using Incremental Mixture Importance Sampling methods, see model_calibration_ver_3.R
