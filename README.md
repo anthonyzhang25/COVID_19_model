@@ -15,7 +15,7 @@ This Github repository contains Rscripts to simulation COVID-19 outbreak in majo
 4. generate model outcomes under different timing and duration of control policies: all scripts under  "simulation_by_policy" folder.
 
 ## Model Calibration
-
+We calibrated our model using Incremental Mixture Importance Sampling methods, see model_calibration_ver_3.R
 ## Results Generation
-
+To generate model results, run scripts under  "simulation_by_policy" folder.
 
