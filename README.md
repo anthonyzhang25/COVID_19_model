@@ -16,6 +16,11 @@ This Github repository contains Rscripts to simulation COVID-19 outbreak in majo
 
 ## Model Calibration
 We calibrated our model using Incremental Mixture Importance Sampling methods, see model_calibration_ver_3.R
+
+## Status quo, and disease burden estimation 
+Run decompose_economy_loss_probablistic.R twice. In the first round, we estimate the mean disease burden, in the second round, we generate both the epidemiological and economic outcome
+
+
 ## Results Generation
 To generate model results, run scripts under  "simulation_by_policy" folder.
 
