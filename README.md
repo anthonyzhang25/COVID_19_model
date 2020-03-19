@@ -1,4 +1,4 @@
-# Optimal timing and effectiveness on control strategies for COVID19 outbreak in China: a modelling study
+# Optimal timing and effectiveness of COVID-19 outbreak responses in China: a modelling study
 
 Anthony Zhenhuan Zhang (zhan4490@umn.edu)   Eva A. Enns (eenns@umn.edu)
 
