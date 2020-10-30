@@ -7,16 +7,18 @@ cost_survived = cost_survived * WTP_ratio
 cost_death = cost_death * WTP_ratio
 
 
-total_loss = c(37.48, 1.841, 2.761, 2.978) * 1000
+# total_loss = c(37.48, 1.841, 2.761, 2.978) * 1000
+### 091920: updated total economy loss 
+total_loss = c(23.46, 8.85, 13.27, 14.32) * 1000 # in million
 # disease_burden_mean = c(482.30285, 174.51075,  70.25288,  54.15841)
 # disease_burden_mean = c(782.68505, 27.70816, 25.01992,19.08906)
-if (WTP_ratio == 3) disease_burden_mean = c(1920.32486,   50.25150,   35.71204,   25.70967)
-if (WTP_ratio == 1) disease_burden_mean = c(802.17082, 30.40620,  22.07904,  15.90081)
-# disease_burden_mean = disease_burden_mean *WTP_ratio
-control_policy_cost = total_loss - disease_burden_mean
-daily_cost_policy = control_policy_cost/ c(69,38,38,38)
-daily_cost_SD = c(daily_cost_policy[2] * 1.2, daily_cost_policy[2:4])
+# if (WTP_ratio == 3) disease_burden_mean = c(1920.32486,   50.30923,   35.73182,   25.72194)
+# if (WTP_ratio == 1) disease_burden_mean = c(802.17082, 30.40620,  22.07904,  15.90081)
 
+control_policy_cost = total_loss
+daily_cost_policy = control_policy_cost/ c(69,38,38,38)
+daily_cost_SD = c(daily_cost_policy[2] * 1.2 * 0.3511, daily_cost_policy[2:4])
+daily_cost_quarantine = daily_cost_policy - daily_cost_SD
 GDP_loss_matrix = rbind(c(daily_cost_policy[1], 0, 0, 0),
                         c(0, daily_cost_SD[2:4]))
 # initial population N
@@ -60,12 +62,11 @@ time = 130 #
 # time = 365 * 2 # simulate two years (to record the date of daily incience go below 1)
 # symptomatic_ratio = c(2/60, (301-2 - 200)/(301-2+318-4 -200- 265), (200)/(465))
 ratio = c(0.09475153, 0.81885277, 1)
-# ratio between symptomatic infection to clinically confirmed cases
-# imported from model_calibration_new.R
+time_to_death = c(20, 20, 11) # from paper
 z_0 = 43 * 2 # zoonotic force of infection, 86 cases per day
 D_E = 6 # average 6 days of incubation period from Lancet
 D_I = 8.4  - D_E # serial interval minus the mean latent period
-E_I_beta_ratio = 0.005
+E_I_beta_ratio = 0
 # 
 # cost_treatment = 4124.64
 # cost_survived = c(131.94, 1317.08, 154.22) # from Appendix, and script calculate_GDP_loss.R
@@ -74,11 +75,13 @@ E_I_beta_ratio = 0.005
 #### contact ratio and contact mat estimated from https://royalsocietypublishing.org/doi/suppl/10.1098/rspb.2014.0268
 ### using script estimate_contact_matrix.R
 contact_mat = rbind(c(21.09312, 20.44581, 15.02198),# normal
-                    c(21.09312, 20.44581, 15.02198) * 1.2, # cny
+                    c(21.09312, 20.44581, 15.02198) * 1.0, # cny
                     # c(3, 3, 3))  #  during outbreak
                     c(21.09312, 20.44581, 15.02198) * 0.5)  #  during outbreak
 contact_ratio = rbind(c(0.5928983 - (1-0.5928983)/3, 0.8353008 - (1- 0.8353008)/3, 0.29090466 - (1 - 0.29090466)/3), # normal 
-                      c(0, 0, 0)) # during cny
+                      # c(0, 0, 0)) # during cny
+                      c(0.5928983 - (1-0.5928983)/3, 0.8353008 - (1- 0.8353008)/3, 0.29090466 - (1 - 0.29090466)/3)) 
+                      # during cny, updated Sep 17th 2020
 
 
 ##### non-pharmaceutical interventions  ####
