@@ -163,17 +163,17 @@ for (t in 2:time){
   today = t + simulation_start - 1
   # npop = S[,t - 1] + E[,t - 1] + IA[,t - 1] + IS[,t - 1] + RA[,t - 1] + RS[, t - 1] + D[,t - 1]
   npop = S[,t - 1] + E[,t - 1] + IA[,t - 1] + IS[,t - 1] + RA[,t - 1] + RS[, t - 1]
-  N_t[t] = sum(npop)
+  N_t[t] = sum(npop + D[, t - 1])
   current_C = as.matrix(rbind(c(C11[t], C12[t], C13[t]),
                               c(C21[t], C22[t], C23[t]),
                               c(C31[t], C32[t], C33[t])))
   dS = -as.matrix(S[,t - 1])*(beta * current_C %*% as.matrix(IS[,t - 1])/npop + 
         E_I_beta_ratio*beta * current_C %*% as.matrix(E[,t - 1])/npop + 
-        E_I_beta_ratio*beta * current_C %*% as.matrix(IA[,t - 1])/npop +   z[t]/sum(npop)) + 
+        1*beta * current_C %*% as.matrix(IA[,t - 1])/npop +   z[t]/sum(npop)) + 
         (L_iw[t] + L_cw[t])/sum(S[,t - 1])*as.matrix(S[,t - 1]) - (L_wi[t] + L_wc[t])/sum(npop) * as.matrix(S[,t - 1])# the derivative of S wrt time
   dE = +as.matrix(S[,t - 1])*(beta * current_C %*% as.matrix(IS[,t - 1])/npop + 
                                 E_I_beta_ratio*beta * current_C %*% as.matrix(E[,t - 1])/npop + 
-                                E_I_beta_ratio*beta * current_C %*% as.matrix(IA[,t - 1])/npop +   z[t]/sum(npop)) - 
+                                1*beta * current_C %*% as.matrix(IA[,t - 1])/npop +   z[t]/sum(npop)) - 
         as.matrix(E[,t - 1])/D_E - (L_wi[t] + L_wc[t])/sum(npop) * as.matrix(E[,t - 1]) 
   # dI = +as.matrix(E[,t - 1])/D_E - as.matrix(I[,t - 1])/D_I -
   #       (L_wi[t] + L_wc[t])/sum(npop) * as.matrix(I[,t - 1]) - mu*as.matrix(I[,t - 1])
@@ -217,7 +217,7 @@ for (i in 1:(time - 1)){
 }
 
 ###### calculate exported cases before travel history screening
-exported = (array(0, dim = c(time, 3, 6))) # time: time steps 3: by age group  5: S E IA, IS, RA, RS
+exported = (array(0, dim = c(time, 3, 6))) # time: time steps 3: by age group  6: S E IA, IS, RA, RS
 
 for (i in 1:time){
   for (age_ind in 1:3){

@@ -116,8 +116,8 @@ days_symptom_to_death = c(20, 20, 11.3) # from https://www.ncbi.nlm.nih.gov/pubm
 
 ###### source wuhan model and other city model
 
-source('wuhan_simulation_policy_by_age.R')
-
+# source('wuhan_simulation_policy_by_age.R')
+source('wuhan_simulation_policy_by_age_debug.R')
 
 
 
@@ -181,7 +181,7 @@ sample_prior <- function(n_samp){
     m_param_samp[, i] <- qunif(m_lhs_unit[,i],
                                min = param_1[i],
                                max = param_2[i])
-   
+    
   }
   # return(as.numeric(m_param_samp))
   return((m_param_samp))
@@ -208,10 +208,10 @@ calc_log_prior <- function(v_params){
                              log = T)
   }
   for (i in 4: n_param){
-  lprior <- lprior + dunif(v_params[, i],
-                           min = param_1[i],
-                           max = param_2[i], 
-                           log = T)
+    lprior <- lprior + dunif(v_params[, i],
+                             min = param_1[i],
+                             max = param_2[i], 
+                             log = T)
   }
   
   return(lprior)
@@ -252,7 +252,7 @@ calc_log_lik <- function(v_params){
       #### calibrate mortality
       # mu_1 = c(6.36e-05, 5.56e-03, 5.50e-02) ### calibrated assuming social distancing with 50% reduction
       # mu_2 = mu_1/7 ## from China CDC case fatality ratio  
-       #  wuhan_output$D[80,1], wuhan_output$D[80,2], wuhan_output$D[89,3])
+      #  wuhan_output$D[80,1], wuhan_output$D[80,2], wuhan_output$D[89,3])
       v_llik[j, 2] <- sum(dpois(x = (round(wuhan_output$D[80,1])),
                                 lambda =  Wuhan_death * death_perc[1], # Youth death,
                                 log = T))
@@ -328,7 +328,7 @@ m_calib_res <- fit_imis$resample
 
 # Calculate log-likelihood (overall fit) and posterior probability of each sample
 m_calib_res <- cbind(m_calib_res,
-                      "Overall_fit" = calc_log_lik(m_calib_res),
+                     "Overall_fit" = calc_log_lik(m_calib_res),
                      "Posterior_prob" = calc_post(m_calib_res))
 
 # normalize posterior probability
@@ -420,6 +420,40 @@ D_mat_mean <- colMeans(D_mat)
 round(D_mat_mean/sum(D_mat_mean) * 100, 2)
 round(D_mat_95cr[,1]/sum(D_mat_95cr[,1])* 100, 2)
 round(D_mat_95cr[,2]/sum(D_mat_95cr[,2])* 100, 2)
+## ratio mean: 0.09475153 0.81885277 1.00072258
+# ratio quantiles
+# 2.5%     97.5%
+# [1,] 0.03005611 0.2581950
+# [2,] 0.69220566 0.9425021
+# [3,] 0.98266979 1.0169713
 
 
 
+#######   don't delete
+# normalized = matrix(0, 3, 3)
+# row_sum = apply(D_mat, 1, sum)
+# for (i in 1:3){
+#   normalized[i, ] = D_mat[i,]/row_sum[i]
+# }
+# round(symptomatic_mat[,3])
+# round(row_sum)
+# round(normalized*100, 2)
+
+
+
+########## results: only calibrate prevalence on Jan 25, with R_0 from 2 to 4
+# v_calib_post_mean
+# [1] 2.3698
+
+# m_calib_res_95cr
+# 2.5%      50%    97.5% 
+# 2.026567 2.371192 2.753568  
+
+
+########## results:  calibrate all, with R_0 from 2 to 4
+# v_calib_post_mean
+# [1] 2.264433
+
+# m_calib_res_95cr
+# 2.5%      50%    97.5% 
+# 2.018304 2.259759 2.555308

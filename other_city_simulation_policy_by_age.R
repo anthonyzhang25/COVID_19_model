@@ -121,6 +121,8 @@ other_city_simulation <- function(init_pop, f, time, beta, D_E, D_I, time_knot_v
   N_t = matrix(0, time)
   ##### 022820: add the quarantined components progressing
   Sq = Eq = IqA = IqS = RqA = RqS = Dq = array(0, c(nage, time, ths_window))
+  ###### 031020: add the remaining IS compartment who continues to be isolated 
+  IqS_remaining = matrix(0, nage, time)
   # screening population size
   THS_count = matrix(0, nage, 6) # 4: SEIA, IS, RA, RS
   screening_counts = 0
@@ -138,11 +140,7 @@ other_city_simulation <- function(init_pop, f, time, beta, D_E, D_I, time_knot_v
     if (today >= chunyun_start && today <= chunyun_end) travel_perc = exportion_perc[2]
     if (today >= quarantine_start && today <= quarantine_end) travel_perc = exportion_perc[3]
     if (today >= ths_start && today <= ths_end) ths_ind = 1
-    npop = S[,t - 1] + Sw[,t - 1] + E[,t - 1] + Ew[,t - 1] + IA[,t - 1] + IwA[,t - 1] + 
-      IS[,t - 1] + IwS[,t - 1] + RA[,t - 1] + RwA[,t - 1] + RS[,t - 1] + RwS[,t - 1]
-    # N_t[t] = sum(npop +  apply(Sq, 1, sum) + apply(Eq, 1, sum) + + apply(IqA, 1, sum) + apply(RqA, 1, sum) +
-    #                + apply(IqS, 1, sum) + apply(RqS, 1, sum) + apply(Dq, 1, sum))
-    N_t[t] = sum(npop)
+    
     current_C = as.matrix(rbind(c(C11[t], C12[t], C13[t]),
                                 c(C21[t], C22[t], C23[t]),
                                 c(C31[t], C32[t], C33[t])))
@@ -183,7 +181,11 @@ other_city_simulation <- function(init_pop, f, time, beta, D_E, D_I, time_knot_v
       IqA[, t - 1, 1] = IqA[, t - 1, 1] + THS_count[, 3]; IqS[, t - 1, 1] = IqS[, t - 1, 1] + THS_count[, 4] 
       RqA[, t - 1, 1] = RqA[, t - 1, 1] + THS_count[, 5]; RqS[, t - 1, 1] = RqS[, t - 1, 1] + THS_count[, 6]
       }
-    
+    npop = S[,t - 1] + Sw[,t - 1] + E[,t - 1] + Ew[,t - 1] + IA[,t - 1] + IwA[,t - 1] + 
+      IS[,t - 1] + IwS[,t - 1] + RA[,t - 1] + RwA[,t - 1] + RS[,t - 1] + RwS[,t - 1]
+    # N_t[t] = sum(npop +  apply(Sq, 1, sum) + apply(Eq, 1, sum) + + apply(IqA, 1, sum) + apply(RqA, 1, sum) +
+    #                + apply(IqS, 1, sum) + apply(RqS, 1, sum) + apply(Dq, 1, sum))
+    N_t[t] = sum(npop + Dw[, t - 1] + D[, t - 1]) ### for vary_beta_E, if beta_E become too large, number of death is large
     
     # ### on the day of ths quarantine end
     # if (today == ths_start + ths_window){
@@ -194,22 +196,22 @@ other_city_simulation <- function(init_pop, f, time, beta, D_E, D_I, time_knot_v
     #   Dw[, t - 1] = Dw[, t - 1] + Dq[, t - 1]
     # }
     # 
-    dS = -as.matrix(S[,t - 1])*(beta * current_C %*% as.matrix(IS[,t - 1] + IwS[,t - 1])/npop + 
-          E_I_beta_ratio*beta * current_C %*% as.matrix(E[,t - 1] + Ew[,t - 1] + IA[, t - 1] + IwA[, t - 1])/npop) # the derivative of S wrt time
-    pSw_l[,t] =  (beta * current_C %*% as.matrix(IS[,t - 1] + IwS[,t - 1])/npop + 
-                E_I_beta_ratio*beta * current_C %*% as.matrix(E[,t - 1] + Ew[,t - 1] + IA[, t - 1] + IwA[, t - 1])/npop)
-    dSw = -as.matrix(Sw[,t - 1]) * pSw_l[t] + as.matrix(imported_t[,1]) # the derivative of S wrt time
+    dS = -as.matrix(S[,t - 1])*(beta * current_C %*% as.matrix(IS[,t - 1] + IwS[,t - 1] + IA[, t - 1] + IwA[, t - 1])/npop + 
+          E_I_beta_ratio*beta * current_C %*% as.matrix(E[,t - 1] + Ew[,t - 1] )/npop) # the derivative of S wrt time
+    pSw_l[,t] =  (beta * current_C %*% as.matrix(IS[,t - 1] + IwS[,t - 1] + IA[, t - 1] + IwA[, t - 1])/npop + 
+                E_I_beta_ratio*beta * current_C %*% as.matrix(E[,t - 1] + Ew[,t - 1] )/npop)
+    dSw = -as.matrix(Sw[,t - 1]) * pSw_l[,t] + as.matrix(imported_t[,1]) # the derivative of S wrt time
     
-    dE = +as.matrix(S[,t - 1])*(beta * current_C %*% as.matrix(IS[,t - 1] + IwS[,t - 1])/npop + 
-          E_I_beta_ratio*beta * current_C %*% as.matrix(E[,t - 1] + Ew[,t - 1] + IA[, t - 1] + IwA[, t - 1])/npop) - as.matrix(E[,t - 1])/D_E
+    dE = +as.matrix(S[,t - 1])*(beta * current_C %*% as.matrix(IS[,t - 1] + IwS[,t - 1] + IA[, t - 1] + IwA[, t - 1])/npop + 
+          E_I_beta_ratio*beta * current_C %*% as.matrix(E[,t - 1] + Ew[,t - 1] )/npop) - as.matrix(E[,t - 1])/D_E
     pEw_l[,t] = 1/D_E
-    dEw = +as.matrix(Sw[,t - 1])*(beta * current_C %*% as.matrix(IS[,t - 1] + IwS[,t - 1])/npop + 
-          E_I_beta_ratio*beta * current_C %*% as.matrix(E[,t - 1] + Ew[,t - 1] + IA[, t - 1] + IwA[, t - 1])/npop) - as.matrix(Ew[,t - 1])/D_E  +  as.matrix(imported_t[,2])
+    dEw = +as.matrix(Sw[,t - 1])*(beta * current_C %*% as.matrix(IS[,t - 1] + IwS[,t - 1] + IA[, t - 1] + IwA[, t - 1])/npop + 
+          E_I_beta_ratio*beta * current_C %*% as.matrix(E[,t - 1] + Ew[,t - 1] )/npop) - as.matrix(Ew[,t - 1])/D_E  +  as.matrix(imported_t[,2])
     
     dIA = as.matrix(E[,t - 1])/D_E * as.matrix(1 - symptomatic_ratio) - as.matrix(IA[,t - 1])/D_I
     dIS = as.matrix(E[,t - 1])/D_E * as.matrix(symptomatic_ratio) - as.matrix(IS[,t - 1])/D_I - mu*as.matrix(IS[,t - 1])
     pIwA_l[,t] = 1/D_I
-    pIwS_l[,T] = 1/D_I + mu
+    pIwS_l[,t] = 1/D_I + mu
     dIwA = as.matrix(Ew[,t - 1])/D_E * as.matrix(1 - symptomatic_ratio) - as.matrix(IwA[,t - 1])/D_I + 
       as.matrix(imported_t[,3])
     dIwS = as.matrix(Ew[,t - 1])/D_E * as.matrix(symptomatic_ratio) - as.matrix(IwS[,t - 1])/D_I - mu*as.matrix(IwS[,t - 1]) + 
@@ -242,15 +244,21 @@ other_city_simulation <- function(init_pop, f, time, beta, D_E, D_I, time_knot_v
       
     }
     
+    ### IqS_remaining are still recovering
+    dIqS_remaining = - as.matrix(IqS_remaining[, t - 1])/D_I - mu*as.matrix(IqS_remaining[, t - 1])
     
+    
+      
+      
     S[,t] = S[,t - 1] + dS; Sw[,t] = Sw[,t - 1] + dSw + Sq[, t, ths_window]
     E[,t] = E[,t - 1] + dE; Ew[,t] = Ew[,t - 1] + dEw + Eq[, t, ths_window]
     IA[,t] = IA[,t - 1] + dIA; IwA[,t] = IwA[,t - 1] + dIwA + IqA[, t, ths_window];
     IS[,t] = IS[,t - 1] + dIS; IwS[,t] = IwS[,t - 1] + dIwS;
     RA[,t] = RA[,t - 1] + dRA; RwA[,t] = RwA[,t - 1] + dRwA + RqA[, t, ths_window]
-    RS[,t] = RS[,t - 1] + dRS; RwS[,t] = RwS[,t - 1] + dRwS + RqS[, t, ths_window]
-    D[,t] = D[,t - 1] + dD; Dw[,t] = Dw[,t - 1] + dDw + Dq[, t, ths_window]
+    RS[,t] = RS[,t - 1] + dRS; RwS[,t] = RwS[,t - 1] + dRwS + RqS[, t, ths_window] + as.matrix(IqS_remaining[, t - 1])/D_I
+    D[,t] = D[,t - 1] + dD; Dw[,t] = Dw[,t - 1] + dDw + Dq[, t, ths_window] + mu*as.matrix(IqS_remaining[, t - 1])
     
+    IqS_remaining[,t] = IqS_remaining[, t - 1] + dIqS_remaining + IqS[, t, ths_window]
   }
   
   local_output = as.data.frame(cbind(t(S), t(E), t(IA), t(IS), t(RA), t(RS), t(D)))
