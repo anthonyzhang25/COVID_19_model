@@ -12,7 +12,8 @@ library(matrixStats)
 ###### source wuhan model and other city model
 source('wuhan_simulation_policy_by_age.R')
 source('other_city_simulation_policy_by_age.R')
-load('m_calib_res.rda')
+# load('m_calib_res.rda')
+load('m_calib_res_revision.rda')
 load('model_inputs.rda')
 
 
@@ -107,7 +108,7 @@ for (reduction in param_range){
     ths_end = quarantine_end ### ths: travel history screening
     # social_distancing_start = as.Date("01/23/20", "%m/%d/%y")
     social_distancing_start = ths_start
-    SD_end_dates[1] = as.Date("02/29/20", "%m/%d/%y")
+    SD_end_dates[1] = as.Date("03/31/20", "%m/%d/%y")
     SD_end_dates[2] = as.Date("02/29/20", "%m/%d/%y")
     SD_end_dates[3] = as.Date("03/31/20", "%m/%d/%y")
     time_knot_vec = list('simulation_start' = simulation_start,'simulation_end' = simulation_end, 
@@ -133,10 +134,11 @@ for (reduction in param_range){
     temp_cum_infected[3, ind] = sum(BJ_output$incidence[1:diff_t + 1])/BJ_output$N_t[diff_t + 1] * 10000
     temp_cum_infected[4, ind] = sum(SH_output$incidence[1:diff_t + 1])/SH_output$N_t[diff_t + 1] * 10000
     
-    temp_cum_death[1, ind] = sum(WH_output$D[diff_t + 1,]) 
-    temp_cum_death[2, ind] = sum(CQ_output$D[diff_t + 1,]) 
-    temp_cum_death[3, ind] = sum(BJ_output$D[diff_t + 1,]) 
-    temp_cum_death[4, ind] = sum(SH_output$D[diff_t + 1,]) 
+    temp_cum_death[1, ind] = WH_output$D[diff_t + 1 - time_to_death[1], 1] + WH_output$D[diff_t + 1 - time_to_death[2], 2] + WH_output$D[diff_t + 1 - time_to_death[3], 3]
+    temp_cum_death[2, ind] = CQ_output$D[diff_t + 1 - time_to_death[1], 1] + CQ_output$D[diff_t + 1 - time_to_death[2], 2] + CQ_output$D[diff_t + 1 - time_to_death[3], 3]
+    temp_cum_death[3, ind] = BJ_output$D[diff_t + 1 - time_to_death[1], 1] + BJ_output$D[diff_t + 1 - time_to_death[2], 2] + BJ_output$D[diff_t + 1 - time_to_death[3], 3]
+    temp_cum_death[4, ind] = SH_output$D[diff_t + 1 - time_to_death[1], 1] + SH_output$D[diff_t + 1 - time_to_death[2], 2] + SH_output$D[diff_t + 1 - time_to_death[3], 3]
+    
     
     temp_screening_cost[1, ind] = CQ_output$screening_counts * 16.438/1e+06
     temp_screening_cost[2, ind] = BJ_output$screening_counts * 16.438/1e+06
